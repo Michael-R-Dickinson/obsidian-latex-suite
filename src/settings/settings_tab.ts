@@ -7,7 +7,7 @@ import LatexSuitePlugin from "../main";
 import { DEFAULT_SETTINGS, type ConcealRevealMode, type LatexSuitePluginSettings } from "./settings";
 import { FileSuggest } from "./ui/file_suggest";
 import { basicSetup } from "./ui/snippets_editor/extensions";
-import { getVimSelectModeCommand, type vimCommand, getVimVisualModeCommand, getVimEditorCommands, getVimRunMatrixEnterCommand, getVimVisualSnippetCommands } from "src/features/editor_commands";
+import { getVimSelectModeCommand, type vimCommand, getVimVisualModeCommand, getVimEditorCommands, getVimRunMatrixEnterCommand } from "src/features/editor_commands";
 import { LatexSuiteSettingsTab2, renderHtml } from "./settings_tab2";
 import { settings_translation as t } from "../i18n/i18n"
 
@@ -815,27 +815,19 @@ export class LatexSuiteSettingTab extends PluginSettingTab {
 				})
 			});
 		vimSettings.push(matrixEnter);
-		const visualSnippetKeys: Setting = new Setting(containerEl)
-			.setName("Vim: Visual snippet keys")
-			.setDesc(`each character becomes a visual mode key that runs the visual snippet it triggers on the selection, without switching to select mode first. E.g. ()[]{}.
-				 These keys lose their normal vim meaning in visual mode. Leave empty to disable this feature.`)
-			.addText((text) => {
-				text.setPlaceholder("()[]{}")
-				.setValue(this.plugin.settings.vimVisualSnippetKeys)
+		const visualSnippets: Setting = new Setting(containerEl)
+			.setName("Vim: Run visual snippets from visual mode")
+			.setDesc(`the trigger of every visual snippet (single character triggers only) becomes a visual mode key that runs it on the selection, without switching to select mode first.
+				 These keys lose their normal vim meaning in visual mode.`)
+			.addToggle((toggle) => toggle
+				.setValue(this.plugin.settings.vimVisualSnippets)
 				.onChange(async (value) => {
-					const oldCommands = getVimVisualSnippetCommands(this.plugin.settings);
-					this.plugin.settings.vimVisualSnippetKeys = value;
+					// saveSettings remaps the keys
+					this.plugin.settings.vimVisualSnippets = value;
 					await this.plugin.saveSettings();
-					const vimObj = window?.CodeMirrorAdapter?.Vim;
-					if (!vimObj) return;
-					oldCommands.forEach(command => vimObj.unmap(command.key, command.context));
-					for (const command of getVimVisualSnippetCommands(this.plugin.settings)) {
-						vimObj[command.defineType](command.id, command.action);
-						vimObj.mapCommand(command.key, command.type, command.id, {}, { context: command.context });
-					}
 				})
-			});
-		vimSettings.push(visualSnippetKeys);
+			);
+		vimSettings.push(visualSnippets);
 		// shows/hides the vim settings, since these settings are not needed if vim is not enabled.
 		vimEnabled.addToggle((toggle) => {
 			const  vimOn = this.plugin.settings.vimEnabled && !!this.app.isVimEnabled?.();

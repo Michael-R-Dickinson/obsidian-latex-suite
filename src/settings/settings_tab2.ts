@@ -95,7 +95,7 @@ type VimSettingDefinition = Definition<
 	| "vimSelectMode"
 	| "vimVisualMode"
 	| "vimMatrixEnter"
-	| "vimVisualSnippetKeys"
+	| "vimVisualSnippets"
 >
 
 type ExperimentalSettingDefinition = Definition<
@@ -661,9 +661,9 @@ export class LatexSuiteSettingsTab2 extends SettingTab {
 				control: getTextControl("vimMatrixEnter"),
 			},
 			{
-				name: t("vim.visual-snippet-keys.name"),
-				desc: this.renderHtml(t("vim.visual-snippet-keys.desc")),
-				control: getTextControl("vimVisualSnippetKeys"),
+				name: t("vim.visual-snippets.name"),
+				desc: this.renderHtml(t("vim.visual-snippets.desc")),
+				control: getToggleControl("vimVisualSnippets"),
 			}
 		]
 		return [{

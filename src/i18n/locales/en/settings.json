@@ -209,9 +209,9 @@
 			"name": "Vim: run matrix enter",
 			"desc": "Maps the key to the action of inserting a new line below while appending <code>\\\\</code> to the current line in a matrix environment. Use empty string to disable this feature."
 		},
-		"visual-snippet-keys": {
-			"name": "Vim: Visual snippet keys",
-			"desc": "Each character becomes a visual mode key that runs the visual snippet it triggers on the selection, without switching to select mode first. E.g. <code>()[]{}</code>. These keys lose their normal vim meaning in visual mode. If no snippet expands, the selection stays in visual mode. Leave empty to disable this feature."
+		"visual-snippets": {
+			"name": "Vim: Run visual snippets from visual mode",
+			"desc": "The trigger of every visual snippet (single character triggers only) becomes a visual mode key that runs it on the selection, without switching to select mode first. These keys lose their normal vim meaning in visual mode, so pick visual snippet triggers that don't clash with vim keys you use. If no snippet expands, the selection stays in visual mode. Updates when snippets reload."
 		}
 	},
 	"keymap": {

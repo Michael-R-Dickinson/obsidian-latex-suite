@@ -5,7 +5,7 @@ import { type LatexSuitePluginSettings, DEFAULT_SETTINGS, type LatexSuiteCMSetti
 import { isIMESupported, LatexSuiteSettingTab } from "./settings/settings_tab";
 import { ICONS } from "./settings/ui/icons";
 
-import { getEditorCommands, getVimEditorCommands, getVimRunMatrixEnterCommand } from "./features/editor_commands";
+import { getEditorCommands, getVimEditorCommands, getVimRunMatrixEnterCommand, getVimVisualSnippetCommands, type vimCommand } from "./features/editor_commands";
 import { registerFormatOnSave } from "./features/format_latex";
 import { getLatexSuiteConfigExtension } from "./snippets/codemirror/config";
 import { type SnippetVariables, parseSnippetVariables, parseSnippets } from "./snippets/parse";
@@ -114,7 +114,9 @@ export default class LatexSuitePlugin extends Plugin implements LatexSuitePlugin
 		registerFormatOnSave(this);
 	}
 
-	onunload() {}
+	onunload() {
+		this.unmapVimVisualSnippetKeys();
+	}
 
 	legacyEditorWarning() {
 		// legacy editor existed till 1.5.0
@@ -246,6 +248,30 @@ export default class LatexSuitePlugin extends Plugin implements LatexSuitePlugin
 		this.setEditorExtensions();
 		// Request Obsidian to reconfigure CM extensions
 		this.app.workspace.updateOptions();
+		this.mapVimVisualSnippetKeys();
+	}
+
+	private vimVisualSnippetCommands: vimCommand[] = [];
+
+	/** (Re)maps the visual mode keys of `vimVisualSnippets` to the currently loaded visual snippets. */
+	mapVimVisualSnippetKeys() {
+		this.unmapVimVisualSnippetKeys();
+		const vimObject = window?.CodeMirrorAdapter?.Vim;
+		if (!vimObject) return;
+		if (!this.app.isVimEnabled?.() || !this.settings.vimEnabled || !this.settings.vimVisualSnippets) return;
+		this.vimVisualSnippetCommands = getVimVisualSnippetCommands(this.CMSettings.snippets.all);
+		for (const command of this.vimVisualSnippetCommands) {
+			vimObject[command.defineType](command.id, command.action);
+			vimObject.mapCommand(command.key, command.type, command.id, {}, { context: command.context });
+		}
+	}
+
+	unmapVimVisualSnippetKeys() {
+		const vimObject = window?.CodeMirrorAdapter?.Vim;
+		for (const command of this.vimVisualSnippetCommands) {
+			vimObject?.unmap(command.key, command.context);
+		}
+		this.vimVisualSnippetCommands = [];
 	}
 
 	// Set 'this.editorExtensions' based on the contents of 'this.CMSettings'

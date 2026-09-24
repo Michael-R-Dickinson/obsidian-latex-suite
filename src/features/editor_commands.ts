@@ -10,6 +10,7 @@ import { newlineMatrixShortcut} from "./matrix_shortcuts";
 import { runTriggerKeySnippets } from "src/latex_suite";
 import { insertNewlineAndIndent } from "@codemirror/commands";
 import { Transaction, Annotation, type TransactionSpec } from "@codemirror/state";
+import type { Snippet } from "src/snippets/snippets";
 
 
 function boxCurrentEquation(view: EditorView) {
@@ -251,13 +252,15 @@ export function getVimVisualModeCommand(settings: LatexSuitePluginSettings): vim
 }
 
 /**
- * One visual mode command per key in `vimVisualSnippetKeys`: switches to select mode
+ * One visual mode command per single character key that triggers a visual snippet: switches to select mode
  * (insert mode keeping the selection) and runs the visual snippet triggered by that key,
  * as if the select mode key had been pressed before it.
  * If no snippet expands (e.g. outside math), it returns to visual mode with the selection kept.
  */
-export function getVimVisualSnippetCommands(settings: LatexSuitePluginSettings): vimCommand[] {
-	const keys = [...new Set(settings.vimVisualSnippetKeys.replace(/\s/g, ""))];
+export function getVimVisualSnippetCommands(snippets: Snippet[]): vimCommand[] {
+	const keys = [...new Set(
+		snippets.filter((s) => s.type === "visual" && s.triggerKey.length === 1).map((s) => s.triggerKey)
+	)];
 	return keys.map((key) => ({
 		id: `latex-suite-vim-visual-snippet-${key}`,
 		defineType: "defineAction",
@@ -334,6 +337,5 @@ export function getVimEditorCommands(settings: LatexSuitePluginSettings): vimCom
 		getVimSelectModeCommand(settings),
 		getVimVisualModeCommand(settings),
 		getVimRunMatrixEnterCommand(settings),
-		...getVimVisualSnippetCommands(settings),
 	]
 }

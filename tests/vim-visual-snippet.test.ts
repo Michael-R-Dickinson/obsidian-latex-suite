@@ -11,9 +11,10 @@ interface FileContext {
 const snippets = `[
 	{trigger: "(", replacement: "(\${VISUAL})", options: "mv"},
 	{trigger: ")", replacement: "$0(\${VISUAL})", options: "mv"},
+	{trigger: "U", replacement: "\\\\underbrace{\${VISUAL}}", options: "mA"},
 ]`;
 
-describe("vim visual snippet keys", () => {
+describe("vim visual snippets from visual mode", () => {
 	getTemporaryVault();
 	const contextId = new ContextId<FileContext>();
 	registerLibResolver(() => window.__latex_suite_test_library);
@@ -39,7 +40,7 @@ describe("vim visual snippet keys", () => {
 				plugin.settings.mathPreviewEnabled = false;
 				plugin.settings.concealEnabled = false;
 				plugin.settings.vimEnabled = true;
-				plugin.settings.vimVisualSnippetKeys = "()";
+				plugin.settings.vimVisualSnippets = true;
 				await plugin.saveSettings(false, true);
 				// vim commands are registered on load
 				plugin.addEditorCommands();
@@ -62,7 +63,8 @@ describe("vim visual snippet keys", () => {
 				for (let i = 1; i < len; i++) pressKey({ key: "l" });
 				await tick();
 				const selected = view.state.sliceDoc(view.state.selection.main.from, view.state.selection.main.to);
-				pressKey({ key });
+				// uppercase letters need shift, or electron sends them lowercase
+				pressKey({ key, modifiers: /^[A-Z]$/.test(key) ? ["Shift"] : [] });
 				await tick();
 				// @ts-expect-error cm is the vim adapter
 				const vim = view.cm?.state?.vim;
@@ -96,5 +98,24 @@ describe("vim visual snippet keys", () => {
 		const result = await run("abc", 0, 3, "(");
 		expect(result.doc).toBe("abc");
 		expect(result.mode).toBe("visual");
+	}, 20_000);
+
+	it("maps visual snippets without the v option (e.g. mA)", async () => {
+		const result = await run("$abc$", 1, 3, "U");
+		expect(result.doc).toBe("$\\underbrace{abc}$");
+	}, 20_000);
+
+	it("maps keys of newly loaded snippets without a restart", async () => {
+		await evalInObsidian({
+			contextId,
+			input: { snippets },
+			callback: async ({ app, context, snippets, lib: { plugin } }) => {
+				const extra = `{trigger: "S", replacement: "\\\\sqrt{\${VISUAL}}", options: "mv"},\n]`;
+				await app.vault.modify(context.snippets, snippets.replace(/\]$/, extra));
+				await plugin.saveSettings(false, true);
+			},
+		});
+		const result = await run("$abc$", 1, 3, "S");
+		expect(result.doc).toBe("$\\sqrt{abc}$");
 	}, 20_000);
 });
