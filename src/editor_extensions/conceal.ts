@@ -405,6 +405,10 @@ const concealTheme = EditorView.baseTheme({
 		textDecoration: "underline",
 	},
 
+	"span.cm-math.cm-concealed-overline": {
+		textDecoration: "overline",
+	},
+
 	"span.cm-math.cm-concealed-mathrm, sub.cm-math.cm-concealed-mathrm": {
 		fontStyle: "normal",
 	},

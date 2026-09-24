@@ -155,6 +155,33 @@ X_3$$
 		expect(result).toStrictEqual(["within", "apart", "within"])
 	})
 
+	it("overline with plain multi-char content uses css overline", async () => {
+		const result = await evalInObsidian({
+			input: {pluginId: "obsidian-latex-suite" },
+			callback: ({ lib: {plugin, view} }) => {
+				const conceal = plugin.test.conceal
+				view.setDoc("\n$$\n\\overline{AB}\n\\overline{z+w}\n\\overline{x}\n\\overline{z_1}\n$$\n")
+				return conceal(view, {}).cached_equations
+			}
+		})
+		expect(result).toStrictEqual({
+			"\\overline{AB}": [
+				[{ start: 0, end: 13, text: "AB", class: "cm-concealed-overline" }]
+			],
+			"\\overline{z+w}": [
+				[{ start: 0, end: 14, text: "z+w", class: "cm-concealed-overline" }]
+			],
+			"\\overline{x}": [
+				[{ start: 0, end: 12, text: "x̄", class: "latex-suite-unicode" }]
+			],
+			// nested LaTeX is not concealed by the overline
+			"\\overline{z_1}": [
+				[],
+				[{ start: 11, end: 13, text: "1", class: "cm-number", elementType: "sub" }]
+			],
+		})
+	})
+
 	it("should conceal subscript after parenthesis", async () => {
 		const result = await evalInObsidian({
 			input: {pluginId: "obsidian-latex-suite" },

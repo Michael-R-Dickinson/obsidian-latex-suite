@@ -39,6 +39,8 @@ const modifiers = {
 	vec: "\u20D7",
 } satisfies Record<string, string>;
 
+const PLAIN_OVERLINE_CONTENT = /^[A-Za-z0-9 +\-=*/()[\],.'|<>]+$/;
+
 enum HandleResultKind {
 	NotHandled,
 	Handled,
@@ -168,15 +170,18 @@ function handleModifier(cursor: TreeCursor, doc: EquationText, macro: string): H
 	const symbol = /^[A-Za-z]$/.test(content)
 		? content
 		: content[0] === "\\" && greek[content.slice(1)];
-	if (!symbol) return { spec: [], kind: HandleResultKind.Handled };
+	// Multi-character overlines with plain content (e.g. \overline{AB}) are
+	// drawn with a CSS overline instead of a combining character
+	const cssOverline = !symbol && macro === "overline" && PLAIN_OVERLINE_CONTENT.test(content);
+	if (!symbol && !cssOverline) return { spec: [], kind: HandleResultKind.Handled };
 	cursor.moveTo(sibling.to, 1);
 	doc.skipCursorMove = true;
 	const spec = [
 		{
 			start: nodeRef.from,
 			end: sibling.to,
-			text: symbol + modifier,
-			class: "latex-suite-unicode",
+			text: cssOverline ? content : symbol + modifier,
+			class: cssOverline ? "cm-concealed-overline" : "latex-suite-unicode",
 		},
 	];
 	return { spec, kind: HandleResultKind.Handled };
