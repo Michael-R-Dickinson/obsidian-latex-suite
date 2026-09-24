@@ -543,3 +543,60 @@ Macros are not yet supported for visual snippets.
 
 ### Vim matrix shortcut \\\\
 Same key mapping rules apply. You can define or redefine `open a new line below` action, which also inserts \\\\ at the end of the current line if it's in a matrix environment.
+
+## Formatter
+
+Formats the LaTeX inside `$$` display blocks so it is easy to read and to navigate line by line (e.g. in vim).
+
+```latex
+\begin{align}
+\lvert z_{1}+z_{2} \rvert^2&=(z_{1}+z_2)\overline{(z_{1}+z_{2})}  && \text{start from the square} \\
+ & =z_{1}\overline{z_{1}}+(z_{1}\overline{z_{2}}+\overline{z_{1}}z_{2})+z_{2}\overline{z_{2}}
+\end{align}
+```
+becomes
+```latex
+\begin{align}
+  \lvert z_1 + z_2 \rvert^2
+    &= (z_1 + z_2)\overline{(z_1 + z_2)}
+    && \text{start from the square} \\
+
+    &= z_1 \overline{z_1}
+       + (z_1 \overline{z_2} + \overline{z_1}z_2)
+       + z_2 \overline{z_2}
+\end{align}
+```
+
+### What it does
+- **Spacing**: one space around relations and operators, no padding inside braces (`{ x }` → `{x}`), minimal script braces (`z_{0}` → `z_0`, `e^\Delta` → `e^{\Delta}`). `\text{...}` content is left as written.
+- **Relations**: rows longer than *Line width* get one line per top-level `=`, `<`, `>`, `\le`, `\ge`, `\neq`, `\approx`, `\equiv`. In aligned environments the break goes before `&=`.
+- **Operators**: a top-level `+`, `-`, `\cdot`, `\times`, ... starts a new line when a term next to it is longer than *Term width*. Continuation lines line up under the first term.
+- **Never split**: anything inside `()`, `[]`, `| |`, `\lvert \rvert` or braces, and anything after `\quad`/`\qquad`.
+- **Annotations**: `&& \text{...}` goes on its own line and is never split.
+- **Row separator**: a row that spans several lines is followed by a blank line (configurable), never after the last row.
+- **Matrices**: in `matrix`, `pmatrix`, `bmatrix`, `cases`, `array`, ... each row stays on one line (`a & b \\`).
+- **Environments**: content is indented one level; `&=` rows one level deeper than the left-hand side.
+
+Only blocks whose `$$` delimiters are on their own lines are formatted; inline math and `$$` inside code fences are ignored. A block is left unchanged if it can't be parsed, contains a `%` comment, or wouldn't format stably.
+
+### Commands
+- **Format LaTeX in current file**
+- **Format LaTeX block at cursor** (only available inside a `$$` block)
+
+Both are a single undo step.
+
+### Format on save
+When enabled, the file is formatted when you save it with the *Save current file* command (`Ctrl/Cmd+S`). Obsidian's automatic background saves don't trigger it, so text is never reformatted while you type.
+
+### Settings
+| Setting | Default | |
+|---|---|---|
+| Enabled | on | Enables the commands |
+| Format on save | off | See above |
+| Line width | 60 | Rows longer than this break at relations |
+| Term width | 20 | Operator break threshold |
+| Indent with tabs / Indent size | off / 2 | |
+| Script braces | Minimal | `Always` gives `e^{z}` |
+| Break at relations | When the row is too long | `Always` breaks at every top-level relation |
+| Row separator | Blank line | Blank line, `%` comment, or none |
+| Annotations on their own line | on | |

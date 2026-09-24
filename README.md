@@ -148,7 +148,13 @@ The plugin also adds the following commands to the Command palette:
 
 - **Box current equation** — surround the equation the cursor is currently in with a box, using "\boxed{ ... }".
 - **Select current equation** – select the equation the cursor is currently in.
+- **Format LaTeX in current file** – format every `$$` display block in the file. See [Formatter](#formatter).
+- **Format LaTeX block at cursor** – format only the `$$` block the cursor is in.
 
+
+### Formatter
+
+Reformat `$$` display blocks for readability and easy editing: consistent spacing, one relation per line for long rows, long sums split at `+`/`-`, and `&&` annotations on their own line. Run it from the command palette or enable *Format on save*. See the [documentation](DOCS.md#formatter).
 
 ### Snippets
 
