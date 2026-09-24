@@ -994,6 +994,14 @@ export const hat = {
 
 
 export const leftrightBrackets: Record<string, string> = {
+	"(": "(",
+	")": ")",
+	"[": "[",
+	"]": "]",
+	"|": "|",
+	"\\{": "{",
+	"\\}": "}",
+	"\\|": "‖",
 	"<": "⟨",
 	">": "⟩",
 	".": "",

@@ -235,6 +235,22 @@ X_3$$
 		])
 	})
 
+	it("collapses \\left and \\right to plain brackets", async () => {
+		const result = await evalInObsidian({
+			input: {pluginId: "obsidian-latex-suite" },
+			callback: ({ lib: {plugin, view} }) => {
+				view.setDoc("\n$$\n\\left( x \\right]\n\\left\\{ y \\right\\|\n$$\n")
+				const { cached_equations } = plugin.test.conceal(view, {})
+				return Object.fromEntries(Object.entries(cached_equations)
+					.map(([eq, specs]) => [eq, specs.flat().map(r => r.text)]))
+			}
+		})
+		expect(result).toStrictEqual({
+			"\\left( x \\right]": ["(", "]"],
+			"\\left\\{ y \\right\\|": ["{", "‖"],
+		})
+	})
+
 	it("should conceal subscript after parenthesis", async () => {
 		const result = await evalInObsidian({
 			input: {pluginId: "obsidian-latex-suite" },
