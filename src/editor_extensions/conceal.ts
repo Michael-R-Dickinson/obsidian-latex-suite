@@ -14,6 +14,8 @@ export type Replacement = {
 	text: string,
 	class?: string,
 	elementType?: string,
+	// Style [start, end) with 'class' instead of replacing it ('text' is ignored)
+	mark?: boolean,
 };
 
 export type ConcealSpec = Replacement[];
@@ -203,7 +205,15 @@ function buildDecoSet(concealments: Concealment[]) {
 		if (!conc.enable) continue;
 
 		for (const replace of conc.spec) {
-			if (replace.start === replace.end) {
+			if (replace.mark) {
+				// Inclusive so that replacements at the edges of the marked
+				// range (e.g. a trailing subscript) are wrapped by the mark
+				decos.push(
+					Decoration.mark({ class: replace.class, inclusive: true })
+						.range(replace.start, replace.end)
+				);
+			}
+			else if (replace.start === replace.end) {
 				// Add an additional "/" symbol, as part of concealing \\frac{}{} -> ()/()
 				decos.push(
 					Decoration.widget({
@@ -245,6 +255,8 @@ function buildAtomicRanges(concealments: Concealment[]) {
 	const repls: Replacement[] = concealments
 		.filter(c => c.enable)
 		.flatMap(c => c.spec)
+		// Marked content stays editable
+		.filter(r => !r.mark)
 		.sort((a, b) => a.start - b.start);
 
 	// RangeSet requires RangeValue but we do not need one
@@ -405,7 +417,7 @@ const concealTheme = EditorView.baseTheme({
 		textDecoration: "underline",
 	},
 
-	"span.cm-math.cm-concealed-overline": {
+	".cm-concealed-overline": {
 		textDecoration: "overline",
 	},
 

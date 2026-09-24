@@ -155,31 +155,63 @@ X_3$$
 		expect(result).toStrictEqual(["within", "apart", "within"])
 	})
 
-	it("overline with plain multi-char content uses css overline", async () => {
+	it("overline hides its syntax and marks content with a css overline", async () => {
 		const result = await evalInObsidian({
 			input: {pluginId: "obsidian-latex-suite" },
 			callback: ({ lib: {plugin, view} }) => {
 				const conceal = plugin.test.conceal
-				view.setDoc("\n$$\n\\overline{AB}\n\\overline{z+w}\n\\overline{x}\n\\overline{z_1}\n$$\n")
+				view.setDoc("\n$$\n\\overline{AB}\n\\overline{x}\n\\overline{z_1}\n$$\n")
 				return conceal(view, {}).cached_equations
 			}
 		})
+		const overline = (from: number, to: number) => [
+			{ start: 0, end: from, text: "" },
+			{ start: from, end: to, text: "", class: "cm-concealed-overline", mark: true },
+			{ start: to, end: to + 1, text: "" },
+		]
 		expect(result).toStrictEqual({
-			"\\overline{AB}": [
-				[{ start: 0, end: 13, text: "AB", class: "cm-concealed-overline" }]
-			],
-			"\\overline{z+w}": [
-				[{ start: 0, end: 14, text: "z+w", class: "cm-concealed-overline" }]
-			],
+			"\\overline{AB}": [overline(10, 12)],
+			// single letters keep the combining macron
 			"\\overline{x}": [
-				[{ start: 0, end: 12, text: "x̄", class: "latex-suite-unicode" }]
+				[{ start: 0, end: 12, text: "x\u0304", class: "latex-suite-unicode" }]
 			],
-			// nested LaTeX is not concealed by the overline
+			// nested LaTeX is still concealed inside the overline
 			"\\overline{z_1}": [
-				[],
+				overline(10, 13),
 				[{ start: 11, end: 13, text: "1", class: "cm-number", elementType: "sub" }]
 			],
 		})
+	})
+
+	it("overline renders around nested concealments", async () => {
+		const result = await evalInObsidian({
+			input: {pluginId: "obsidian-latex-suite" },
+			callback: async ({ app, obsidianModule, lib: {view} }) => {
+				// Source mode, so live preview doesn't render the block with MathJax
+				if (view.state.field(obsidianModule.editorLivePreviewField)) {
+					app.commands.executeCommandById("editor:toggle-source");
+				}
+				// cursor on the "x" line, away from the overlines
+				const doc = "$$\n\\overline{z_1}\n\\overline{\\alpha z}\nx\n$$\n"
+				view.setDoc(doc, doc.indexOf("x"))
+				await new Promise(r => setTimeout(r, 200))
+				// Overlined text per line (a mark may be split into several spans)
+				return [2, 3].map(n => {
+					const line = (view.domAtPos(view.state.doc.line(n).from).node as Node)
+					const lineEl = (line instanceof HTMLElement ? line : line.parentElement)?.closest(".cm-line")
+					const marked = [...(lineEl?.querySelectorAll(".cm-concealed-overline") ?? [])]
+					return {
+						text: marked.map(m => m.textContent).join(""),
+						hasSub: marked.some(m => !!m.querySelector("sub")),
+						raw: lineEl?.textContent?.includes("overline") ?? true,
+					}
+				})
+			}
+		})
+		expect(result).toStrictEqual([
+			{ text: "z1", hasSub: true, raw: false },
+			{ text: "α z", hasSub: false, raw: false },
+		])
 	})
 
 	it("should conceal subscript after parenthesis", async () => {

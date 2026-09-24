@@ -39,8 +39,6 @@ const modifiers = {
 	vec: "\u20D7",
 } satisfies Record<string, string>;
 
-const PLAIN_OVERLINE_CONTENT = /^[A-Za-z0-9 +\-=*/()[\],.'|<>]+$/;
-
 enum HandleResultKind {
 	NotHandled,
 	Handled,
@@ -170,19 +168,36 @@ function handleModifier(cursor: TreeCursor, doc: EquationText, macro: string): H
 	const symbol = /^[A-Za-z]$/.test(content)
 		? content
 		: content[0] === "\\" && greek[content.slice(1)];
-	// Multi-character overlines with plain content (e.g. \overline{AB}) are
-	// drawn with a CSS overline instead of a combining character
-	const cssOverline = !symbol && macro === "overline" && PLAIN_OVERLINE_CONTENT.test(content);
-	if (!symbol && !cssOverline) return { spec: [], kind: HandleResultKind.Handled };
+	if (!symbol) {
+		if (macro === "overline") return handleCssOverline(nodeRef, mathArgumentNode);
+		return { spec: [], kind: HandleResultKind.Handled };
+	}
 	cursor.moveTo(sibling.to, 1);
 	doc.skipCursorMove = true;
 	const spec = [
 		{
 			start: nodeRef.from,
 			end: sibling.to,
-			text: cssOverline ? content : symbol + modifier,
-			class: cssOverline ? "cm-concealed-overline" : "latex-suite-unicode",
+			text: symbol + modifier,
+			class: "latex-suite-unicode",
 		},
+	];
+	return { spec, kind: HandleResultKind.Handled };
+}
+
+/**
+ * \overline{...} with arbitrary content: hide "\overline{" and "}" and draw a
+ * CSS overline over the content. The cursor is not moved past the argument,
+ * so concealments inside the content (e.g. subscripts) still apply.
+ */
+function handleCssOverline(
+	node: SyntaxNode,
+	arg: NonNullable<ReturnType<typeof extractMathArgument>>,
+): HandleConcealResult {
+	const spec = [
+		{ start: node.from, end: arg.openBraceNode.to, text: "" },
+		{ start: arg.mathNode.from, end: arg.mathNode.to, text: "", class: "cm-concealed-overline", mark: true },
+		{ start: arg.closeBraceNode.from, end: arg.closeBraceNode.to, text: "" },
 	];
 	return { spec, kind: HandleResultKind.Handled };
 }
