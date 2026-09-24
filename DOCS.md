@@ -541,6 +541,9 @@ Keep in mind that the shortcut from visual -> select mode only works in visual m
 
 Macros are not yet supported for visual snippets.
 
+#### Visual snippet keys
+To skip the select mode shortcut, list keys under "Vim: Visual snippet keys", e.g. `()[]{}`. Pressing one of them in visual mode runs the visual snippet it triggers straight away, as if you had switched to select mode and typed it. If no snippet expands (e.g. outside math), the selection stays in visual mode. These keys lose their normal vim meaning in visual mode, and a reload is needed after changing them.
+
 ### Vim matrix shortcut \\\\
 Same key mapping rules apply. You can define or redefine `open a new line below` action, which also inserts \\\\ at the end of the current line if it's in a matrix environment.
 
