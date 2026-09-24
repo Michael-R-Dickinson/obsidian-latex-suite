@@ -4,7 +4,7 @@ import { App, ButtonComponent, Component, ExtraButtonComponent, Modal, Notice, P
 import { parseSnippetVariables, parseSnippets } from "src/snippets/parse";
 import { DEFAULT_SNIPPETS } from "src/utils/default_snippets";
 import LatexSuitePlugin from "../main";
-import { DEFAULT_SETTINGS, type LatexSuitePluginSettings } from "./settings";
+import { DEFAULT_SETTINGS, type ConcealRevealMode, type LatexSuitePluginSettings } from "./settings";
 import { FileSuggest } from "./ui/file_suggest";
 import { basicSetup } from "./ui/snippets_editor/extensions";
 import { getVimSelectModeCommand, type vimCommand, getVimVisualModeCommand, getVimEditorCommands, getVimRunMatrixEnterCommand } from "src/features/editor_commands";
@@ -175,6 +175,19 @@ export class LatexSuiteSettingTab extends PluginSettingTab {
 						this.plugin.settings.concealRevealTimeout = Number(value);
 						void this.plugin.saveSettings();
 					}
+				})
+			);
+
+		new Setting(containerEl)
+			.setName(t("conceal.reveal-mode.name"))
+			.setDesc(renderHtml(t("conceal.reveal-mode.desc")))
+			.addDropdown(dropdown => dropdown
+				.addOption("symbol", t("conceal.reveal-mode.options.symbol"))
+				.addOption("line", t("conceal.reveal-mode.options.line"))
+				.setValue(this.plugin.settings.concealRevealMode)
+				.onChange(async (value) => {
+					this.plugin.settings.concealRevealMode = value as ConcealRevealMode;
+					await this.plugin.saveSettings();
 				})
 			);
 

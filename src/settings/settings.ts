@@ -6,6 +6,7 @@ import * as v from "valibot";
 import { DEFAULT_FORMATTER_OPTIONS, type FormatterOptions } from "src/features/latex_formatter";
 
 export type snippetDebugLevel = "off" | "info" | "verbose";
+export type ConcealRevealMode = "symbol" | "line";
 
 type CMKeyMap = string;
 type VimKeyMap = string;
@@ -23,6 +24,7 @@ export interface LatexSuiteBasicSettings {
 	autofractionEnabled: boolean;
 	concealEnabled: boolean;
 	concealRevealTimeout: number;
+	concealRevealMode: ConcealRevealMode;
 	colorPairedBracketsEnabled: boolean;
 	highlightCursorBracketsEnabled: boolean;
 	mathPreviewEnabled: boolean;
@@ -129,6 +131,7 @@ export const DEFAULT_SETTINGS: LatexSuitePluginSettings = {
 	snippetVariablesFileLocation: "",
 	concealEnabled: false,
 	concealRevealTimeout: 0,
+	concealRevealMode: "symbol",
 	colorPairedBracketsEnabled: true,
 	highlightCursorBracketsEnabled: true,
 	mathPreviewEnabled: true,

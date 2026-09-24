@@ -1,7 +1,7 @@
 // https://discuss.codemirror.net/t/concealing-syntax/3135
 
 import { ViewUpdate, Decoration, type DecorationSet, WidgetType, ViewPlugin, EditorView, type PluginValue } from "@codemirror/view";
-import { EditorSelection, Range, RangeSet, RangeSetBuilder, RangeValue, Transaction } from "@codemirror/state";
+import { EditorSelection, EditorState, Range, RangeSet, RangeSetBuilder, RangeValue, Transaction } from "@codemirror/state";
 import { conceal, type ConcealCachedEquations } from "./conceal_fns";
 import { debounce, livePreviewState } from "obsidian";
 import { tempKeyPress } from "src/snippets/snippet_management";
@@ -107,6 +107,24 @@ function atSamePosAfter(
 	}
 
 	return true;
+}
+
+/**
+ * Line reveal mode: a concealment is "within" if any part of it lies on a
+ * line touched by a selection range, otherwise "apart".
+ */
+export function determineLineCursorPosType(
+	state: EditorState,
+	concealSpec: ConcealSpec,
+): Concealment["cursorPosType"] {
+	for (const range of state.selection.ranges) {
+		const lineFrom = state.doc.lineAt(range.from).from;
+		const lineTo = state.doc.lineAt(range.to).to;
+		for (const replace of concealSpec) {
+			if (replace.start <= lineTo && replace.end >= lineFrom) return "within";
+		}
+	}
+	return "apart";
 }
 
 function determineCursorPosType(
@@ -329,6 +347,7 @@ class Conceal implements PluginValue {
 	private updateFromConcealSpecs(concealSpecs: ConcealSpec[], update: ViewUpdate) {
 
 		const selection = update.state.selection;
+		const revealByLine = getLatexSuiteConfig(update.state).concealRevealMode === "line";
 		const previousMouseDown = this.mousedown
 		this.mousedown = update.view.plugin(livePreviewState)?.mousedown ?? false;
 
@@ -339,7 +358,9 @@ class Conceal implements PluginValue {
 		let revealed = false
 
 		for (const spec of concealSpecs) {
-			const cursorPosType = determineCursorPosType(selection, spec);
+			const cursorPosType = revealByLine
+				? determineLineCursorPosType(update.state, spec)
+				: determineCursorPosType(selection, spec);
 			const oldConcealment = this.concealments.find(
 				(old) => atSamePosAfter(update, old.spec, spec)
 			);

@@ -35,6 +35,7 @@ type AdvancedSnippetSettingDefinition = Definition<
 type ConcealSettingDefinition = Definition<
 	| "concealEnabled"
 	| "concealRevealTimeout"
+	| "concealRevealMode"
 >
 
 type ColorHighlightSettingDefinition = Definition<
@@ -275,6 +276,19 @@ export class LatexSuiteSettingsTab2 extends SettingTab {
 					key: "concealRevealTimeout",
 					defaultValue: DEFAULT_SETTINGS.concealRevealTimeout,
 					min: 0,
+				},
+			},
+			{
+				name: t("conceal.reveal-mode.name"),
+				desc: this.renderHtml(t("conceal.reveal-mode.desc")),
+				control: {
+					type: "dropdown",
+					key: "concealRevealMode",
+					options: {
+						symbol: t("conceal.reveal-mode.options.symbol"),
+						line: t("conceal.reveal-mode.options.line"),
+					},
+					defaultValue: DEFAULT_SETTINGS.concealRevealMode,
 				},
 			},
 		]

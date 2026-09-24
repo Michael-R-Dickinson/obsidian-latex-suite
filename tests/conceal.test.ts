@@ -136,7 +136,25 @@ X_3$$
 			]
 		})
 	})
-	
+
+	it("line reveal mode reveals concealments touching the cursor's line", async () => {
+		const result = await evalInObsidian({
+			input: {pluginId: "obsidian-latex-suite" },
+			callback: ({ lib: {plugin, view} }) => {
+				const { determineLineCursorPosType } = plugin.test
+				// Lines: "" | "$$" | "a^{2}" (4-9) | "b^{2}" (10-15) | "$$"
+				view.setDoc("\n$$\na^{2}\nb^{2}\n$$\n", 5)
+				const specs = [
+					[{ start: 5, end: 9, text: "2" }],   // on the cursor's line
+					[{ start: 11, end: 15, text: "2" }], // on the next line
+					[{ start: 5, end: 15, text: "x" }],  // spans both lines
+				]
+				return specs.map(spec => determineLineCursorPosType(view.state, spec))
+			}
+		})
+		expect(result).toStrictEqual(["within", "apart", "within"])
+	})
+
 	it("should conceal subscript after parenthesis", async () => {
 		const result = await evalInObsidian({
 			input: {pluginId: "obsidian-latex-suite" },

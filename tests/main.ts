@@ -1,6 +1,7 @@
 import LatexSuitePlugin from "../src/main";
 import { fullMathParser } from "../src/parser/mathjax-parser";
 import { conceal } from "../src/editor_extensions/conceal_fns";
+import { determineLineCursorPosType } from "../src/editor_extensions/conceal";
 import { MarkdownView } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { RawSnippetSchema } from "../src/snippets/parse";
@@ -34,6 +35,7 @@ export default class TestPlugin extends LatexSuitePlugin {
 	test = {
 		parser: fullMathParser,
 		conceal,
+		determineLineCursorPosType,
 		colorPairedBrackets
 	}	
 	async onload() {
