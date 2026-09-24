@@ -7,6 +7,7 @@ import type { CodeMirrorEditor } from "src/types/vim_types";
 import { getFormatterOptions, type LatexSuitePluginSettings } from "src/settings/settings";
 import { formatLatexInView, isInDisplayMathBlock } from "./format_latex";
 import { newlineMatrixShortcut} from "./matrix_shortcuts";
+import { runTriggerKeySnippets } from "src/latex_suite";
 import { insertNewlineAndIndent } from "@codemirror/commands";
 import { Transaction, Annotation, type TransactionSpec } from "@codemirror/state";
 
@@ -249,6 +250,35 @@ export function getVimVisualModeCommand(settings: LatexSuitePluginSettings): vim
 	}
 }
 
+/**
+ * One visual mode command per key in `vimVisualSnippetKeys`: switches to select mode
+ * (insert mode keeping the selection) and runs the visual snippet triggered by that key,
+ * as if the select mode key had been pressed before it.
+ * If no snippet expands (e.g. outside math), it returns to visual mode with the selection kept.
+ */
+export function getVimVisualSnippetCommands(settings: LatexSuitePluginSettings): vimCommand[] {
+	const keys = [...new Set(settings.vimVisualSnippetKeys.replace(/\s/g, ""))];
+	return keys.map((key) => ({
+		id: `latex-suite-vim-visual-snippet-${key}`,
+		defineType: "defineAction",
+		type: "action",
+		action: (cm: CodeMirrorEditor) => {
+			const vimObject = window?.CodeMirrorAdapter?.Vim;
+			const view = EditorView.findFromDOM(cm.getWrapperElement());
+			if (!vimObject || !view) return;
+			// changing vim modes deletes the selection, so restore it after each switch
+			const selection: EditorSelection[] = cm.listSelections();
+			vimObject.enterInsertMode(cm);
+			cm.setSelections(selection);
+			if (runTriggerKeySnippets(view, key)) return;
+			vimObject.exitInsertMode(cm);
+			cm.setSelections(selection);
+		},
+		key: key === "<" ? "<lt>" : key,
+		context: "visual",
+	}));
+}
+
 export function getVimRunMatrixEnterCommand(settings: LatexSuitePluginSettings): vimCommand {
 	return {
 		id: "latex-suite-vim-special-enter",
@@ -304,5 +334,6 @@ export function getVimEditorCommands(settings: LatexSuitePluginSettings): vimCom
 		getVimSelectModeCommand(settings),
 		getVimVisualModeCommand(settings),
 		getVimRunMatrixEnterCommand(settings),
+		...getVimVisualSnippetCommands(settings),
 	]
 }

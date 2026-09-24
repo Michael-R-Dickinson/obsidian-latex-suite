@@ -131,6 +131,24 @@ export const handleKeydown = (key: string, ctrlKey: boolean, isIME: boolean, vie
 	return false;
 };
 
+/**
+ * Runs the snippets bound to `key` as their `triggerKey` (this includes visual snippets),
+ * as if `key` had been pressed.
+ */
+export const runTriggerKeySnippets = (view: EditorView, key: string): boolean => {
+	const settings = getLatexSuiteConfig(view);
+	if (!settings.snippetsEnabled) return false;
+	const snippets = settings.snippets.all.filter((s) => s.triggerKey === key);
+	try {
+		const options = {recursive: settings.snippetRecursion, debug: settings.snippetDebug};
+		return runSnippets(view, {snippets}, options);
+	} catch (e) {
+		clearSnippetQueue(view);
+		console.error(e);
+		return false;
+	}
+};
+
 type LatexSuiteKeyBinding = KeyBinding & {scope: "latex-suite"};
 
 /**

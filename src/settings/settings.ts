@@ -45,6 +45,8 @@ export interface LatexSuiteBasicSettings {
 	vimSelectMode: VimKeyMap;
 	vimVisualMode: VimKeyMap;
 	vimMatrixEnter: VimKeyMap;
+	/** each character is a visual mode key that runs its visual snippet directly */
+	vimVisualSnippetKeys: string;
 	snippetRecursion: number;
 	snippetIMEVersion: boolean;
 	highlightDollarEnabled: boolean;
@@ -167,6 +169,7 @@ export const DEFAULT_SETTINGS: LatexSuitePluginSettings = {
 	vimSelectMode: "<C-g>",
 	vimVisualMode: "<C-g>",
 	vimMatrixEnter: "o",
+	vimVisualSnippetKeys: "",
 	snippetRecursion: 0,
 	snippetIMEVersion: false,
 	highlightDollarEnabled: true,

@@ -50,6 +50,7 @@ export const EMPTY_SETTINGS: LatexSuitePluginSettings = {
 	vimSelectMode: "",
 	vimVisualMode: "",
 	vimMatrixEnter: "",
+	vimVisualSnippetKeys: "",
 	snippetRecursion: 0,
 	snippetIMEVersion: false,
 	highlightDollarEnabled: false,
