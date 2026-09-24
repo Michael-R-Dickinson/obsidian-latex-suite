@@ -205,14 +205,8 @@ function buildDecoSet(concealments: Concealment[]) {
 		if (!conc.enable) continue;
 
 		for (const replace of conc.spec) {
-			if (replace.mark) {
-				// Inclusive so that replacements at the edges of the marked
-				// range (e.g. a trailing subscript) are wrapped by the mark
-				decos.push(
-					Decoration.mark({ class: replace.class, inclusive: true })
-						.range(replace.start, replace.end)
-				);
-			}
+			// Marks are built separately, see buildMarkSet
+			if (replace.mark) continue;
 			else if (replace.start === replace.end) {
 				// Add an additional "/" symbol, as part of concealing \\frac{}{} -> ()/()
 				decos.push(
@@ -244,6 +238,22 @@ function buildDecoSet(concealments: Concealment[]) {
 		}
 	}
 
+	return Decoration.set(decos, true);
+}
+
+// Build the mark decorations (e.g. \overline) from the given concealments.
+// They're provided as outer decorations (lowest precedence), so each mark is
+// rendered as one element wrapping the syntax-highlight spans and replace
+// widgets inside it, instead of being split into one span per token (which
+// would draw a disjointed overline).
+function buildMarkSet(concealments: Concealment[]) {
+	const decos: Range<Decoration>[] = concealments
+		.filter(c => c.enable)
+		.flatMap(c => c.spec)
+		.filter(r => r.mark)
+		// Inclusive so that replacements at the edges of the marked
+		// range (e.g. a trailing subscript) are wrapped by the mark
+		.map(r => Decoration.mark({ class: r.class, inclusive: true }).range(r.start, r.end));
 	return Decoration.set(decos, true);
 }
 
@@ -292,6 +302,7 @@ class Conceal implements PluginValue {
 	// obsidian's internal logic and causes weird rendering.
 	concealments: Concealment[];
 	decorations: DecorationSet;
+	markDecorations: DecorationSet;
 	atomicRanges: RangeSet<RangeValue>;
 	delayEnabled: boolean;
 	cached_equations: ConcealCachedEquations;
@@ -303,6 +314,7 @@ class Conceal implements PluginValue {
 	constructor(view: EditorView) {
 		this.concealments = [];
 		this.decorations = Decoration.none;
+		this.markDecorations = Decoration.none;
 		this.atomicRanges = RangeSet.empty as RangeSet<RangeValue>;
 		const revealTimeout = getLatexSuiteConfig(view).concealRevealTimeout;
 		this.delayEnabled = revealTimeout > 0;
@@ -324,6 +336,7 @@ class Conceal implements PluginValue {
 			concealment.enable = false;
 		}
 		this.decorations = buildDecoSet(this.concealments);
+		this.markDecorations = buildMarkSet(this.concealments);
 		this.atomicRanges = buildAtomicRanges(this.concealments);
 
 		// Invoke the update method to reflect the changes of this.decoration
@@ -338,6 +351,7 @@ class Conceal implements PluginValue {
 			return;
 		if (update.transactions.some(tr => tr.annotation(tempKeyPress))) {
 			this.decorations = this.decorations.map(update.changes);
+			this.markDecorations = this.markDecorations.map(update.changes);
 			this.atomicRanges = this.atomicRanges.map(update.changes);
 			return;
 		}
@@ -405,6 +419,7 @@ class Conceal implements PluginValue {
 
 		this.concealments = concealments;
 		this.decorations = buildDecoSet(this.concealments);
+		this.markDecorations = buildMarkSet(this.concealments);
 		this.atomicRanges = buildAtomicRanges(this.concealments);
 	}
 }
@@ -417,8 +432,17 @@ const concealTheme = EditorView.baseTheme({
 		textDecoration: "underline",
 	},
 
+	/* One flat line over the whole content: a border (not text-decoration,
+	   which is painted per inline box at per-glyph heights and colors),
+	   raised by padding so it clears superscripts. Vertical padding on an
+	   inline element doesn't affect line layout. */
 	".cm-concealed-overline": {
-		textDecoration: "overline",
+		paddingTop: "0",
+		borderTop: "1px solid var(--text-normal)",
+	},
+	/* Nested overlines: the outer one sits above the inner one */
+	".cm-concealed-overline:has(.cm-concealed-overline)": {
+		paddingTop: "0.15em",
 	},
 
 	"span.cm-math.cm-concealed-mathrm, sub.cm-math.cm-concealed-mathrm": {
@@ -438,7 +462,10 @@ const concealTheme = EditorView.baseTheme({
 export function mkConcealPlugin() {
 	const concealPlugin = ViewPlugin.fromClass(Conceal, {
 		decorations: v => v.decorations,
-		provide: plugin => EditorView.atomicRanges.of(view => view.plugin(plugin)?.atomicRanges ?? RangeSet.empty),
+		provide: plugin => [
+			EditorView.atomicRanges.of(view => view.plugin(plugin)?.atomicRanges ?? RangeSet.empty),
+			EditorView.outerDecorations.of(view => view.plugin(plugin)?.markDecorations ?? Decoration.none),
+		],
 	});
 	
 	return [concealPlugin, concealTheme];

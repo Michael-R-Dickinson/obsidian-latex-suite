@@ -183,7 +183,7 @@ X_3$$
 		})
 	})
 
-	it("overline renders around nested concealments", async () => {
+	it("overline renders as one flat line around nested concealments", async () => {
 		const result = await evalInObsidian({
 			input: {pluginId: "obsidian-latex-suite" },
 			callback: async ({ app, obsidianModule, lib: {view} }) => {
@@ -192,25 +192,46 @@ X_3$$
 					app.commands.executeCommandById("editor:toggle-source");
 				}
 				// cursor on the "x" line, away from the overlines
-				const doc = "$$\n\\overline{z_1}\n\\overline{\\alpha z}\nx\n$$\n"
-				view.setDoc(doc, doc.indexOf("x"))
+				const doc = "$$\n\\overline{z_1}\n\\overline{\\alpha z}\n\\overline{a^2+b^2} + \\overline{cx+d}\n\\overline{\\overline{ab}c}\nz_1\nx\n$$\n"
+				view.setDoc(doc, doc.indexOf("x\n"))
 				await new Promise(r => setTimeout(r, 200))
-				// Overlined text per line (a mark may be split into several spans)
-				return [2, 3].map(n => {
-					const line = (view.domAtPos(view.state.doc.line(n).from).node as Node)
-					const lineEl = (line instanceof HTMLElement ? line : line.parentElement)?.closest(".cm-line")
-					const marked = [...(lineEl?.querySelectorAll(".cm-concealed-overline") ?? [])]
+				const lineEl = (n: number) => {
+					const node = view.domAtPos(view.state.doc.line(n).from).node as Node
+					return (node instanceof HTMLElement ? node : node.parentElement)!.closest(".cm-line") as HTMLElement
+				}
+				// Reference lines without overline (a subscript alone already grows the line)
+				const height = (n: number) => lineEl(n).getBoundingClientRect().height
+				const plainHeight = (n: number) => n === 2 ? height(6) : height(7)
+				return [2, 3, 4, 5].map(n => {
+					const line = lineEl(n)
+					const marked = [...line.querySelectorAll<HTMLElement>(".cm-concealed-overline")]
+					const outer = marked.filter(m => !m.parentElement?.closest(".cm-concealed-overline"))
 					return {
-						text: marked.map(m => m.textContent).join(""),
-						hasSub: marked.some(m => !!m.querySelector("sub")),
-						raw: lineEl?.textContent?.includes("overline") ?? true,
+						// one element per overline, wrapping highlight spans and widgets
+						texts: outer.map(m => m.textContent),
+						hasSub: outer.some(m => !!m.querySelector("sub")),
+						hasSup: outer.some(m => !!m.querySelector("sup")),
+						raw: line.textContent?.includes("overline") ?? true,
+						// flat, single-colored line at one height
+						tops: new Set(outer.map(m => m.getBoundingClientRect().top)).size,
+						colors: [...new Set(marked.map(m => getComputedStyle(m).borderTopColor))].length,
+						textDecoration: marked.some(m => getComputedStyle(m).textDecorationLine.includes("overline")),
+						// nested overline sits above its parent's content
+						nestedAbove: marked.length > outer.length
+							? outer[0].getBoundingClientRect().top < marked.find(m => !outer.includes(m))!.getBoundingClientRect().top
+							: null,
+						// doesn't change the line layout
+						sameHeight: height(n) === plainHeight(n),
 					}
 				})
 			}
 		})
+		const line = { hasSub: false, hasSup: false, raw: false, tops: 1, colors: 1, textDecoration: false, nestedAbove: null, sameHeight: true }
 		expect(result).toStrictEqual([
-			{ text: "z1", hasSub: true, raw: false },
-			{ text: "α z", hasSub: false, raw: false },
+			{ ...line, texts: ["z1"], hasSub: true },
+			{ ...line, texts: ["α z"] },
+			{ ...line, texts: ["a2+b2", "cx+d"], hasSup: true },
+			{ ...line, texts: ["abc"], nestedAbove: true },
 		])
 	})
 
