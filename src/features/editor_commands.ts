@@ -1,10 +1,11 @@
-import { Editor, type EditorSelection } from "obsidian";
+import { Editor, Notice, type EditorSelection } from "obsidian";
 import { EditorView } from "@codemirror/view";
 import { replaceRange, setCursor, setSelection } from "../utils/editor_utils";
 import LatexSuitePlugin from "src/main";
 import { getContextPlugin } from "src/editor_context/context";
 import type { CodeMirrorEditor } from "src/types/vim_types";
-import type { LatexSuitePluginSettings } from "src/settings/settings";
+import { getFormatterOptions, type LatexSuitePluginSettings } from "src/settings/settings";
+import { formatLatexInView, isInDisplayMathBlock } from "./format_latex";
 import { newlineMatrixShortcut} from "./matrix_shortcuts";
 import { insertNewlineAndIndent } from "@codemirror/commands";
 import { Transaction, Annotation, type TransactionSpec } from "@codemirror/state";
@@ -153,6 +154,42 @@ function getToggleConcealCommand(plugin: LatexSuitePlugin) {
 }
 
 
+function getFormatFileCommand(plugin: LatexSuitePlugin) {
+	return {
+		id: "latex-suite-format-file",
+		name: "Format LaTeX in current file",
+		editorCheckCallback: (checking: boolean, editor: Editor) => {
+			if (checking) return plugin.settings.formatterEnabled;
+			if (!plugin.settings.formatterEnabled) return;
+
+			const { changed, skipped } = formatLatexInView(editor.cm, getFormatterOptions(plugin.settings));
+			let message = `Latex Suite: formatted ${changed} math block${changed === 1 ? "" : "s"}.`;
+			if (skipped) message += ` Skipped ${skipped} block${skipped === 1 ? "" : "s"} that couldn't be formatted safely.`;
+			new Notice(message);
+		},
+	}
+}
+
+
+function getFormatBlockCommand(plugin: LatexSuitePlugin) {
+	return {
+		id: "latex-suite-format-block",
+		name: "Format LaTeX block at cursor",
+		editorCheckCallback: (checking: boolean, editor: Editor) => {
+			const view = editor.cm;
+			const pos = view.state.selection.main.head;
+			const available = plugin.settings.formatterEnabled && isInDisplayMathBlock(view, pos);
+
+			if (checking) return available;
+			if (!available) return;
+
+			const { skipped } = formatLatexInView(view, getFormatterOptions(plugin.settings), pos);
+			if (skipped) new Notice("Latex Suite: this math block couldn't be formatted safely (parse error or % comment).");
+		},
+	}
+}
+
+
 export const getEditorCommands = (plugin: LatexSuitePlugin) => {
 	return [
 		getBoxEquationCommand(),
@@ -161,6 +198,8 @@ export const getEditorCommands = (plugin: LatexSuitePlugin) => {
 		getDisableAllFeaturesCommand(plugin),
 		getToggleConcealCommand(plugin),
 		getToggleAllFeaturesCommand(plugin),
+		getFormatFileCommand(plugin),
+		getFormatBlockCommand(plugin),
 	];
 };
 

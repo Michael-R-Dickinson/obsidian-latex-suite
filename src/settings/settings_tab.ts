@@ -64,6 +64,7 @@ export class LatexSuiteSettingTab extends PluginSettingTab {
 		this.displayMatrixShortcutsSettings();
 		this.displayTaboutSettings();
 		this.displayAutoEnlargeBracketsSettings();
+		this.displayFormatterSettings();
 		this.displayAdvancedSnippetSettings();
 		this.displayKeymapSettings();
 		this.displayExperimentalSettings();
@@ -482,6 +483,106 @@ export class LatexSuiteSettingTab extends PluginSettingTab {
 					this.plugin.settings.autoEnlargeBracketsSpace = value;
 					await this.plugin.saveSettings();
 				}))
+	}
+
+	private displayFormatterSettings() {
+		const containerEl = this.containerEl;
+		this.addHeading(containerEl, t("formatter.heading"), "align-left");
+
+		const toggles = [
+			["enabled", "formatterEnabled"],
+			["format-on-save", "formatterFormatOnSave"],
+		] as const;
+		for (const [name, key] of toggles) {
+			new Setting(containerEl)
+				.setName(t(`formatter.${name}.name`))
+				.setDesc(renderHtml(t(`formatter.${name}.desc`)))
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings[key])
+					.onChange(async (value) => {
+						this.plugin.settings[key] = value;
+						await this.plugin.saveSettings();
+					}));
+		}
+
+		const numberSetting = (name: "line-width" | "term-width" | "indent-size", key: "formatterLineWidth" | "formatterTermWidth" | "formatterIndentSize") =>
+			new Setting(containerEl)
+				.setName(t(`formatter.${name}.name`))
+				.setDesc(renderHtml(t(`formatter.${name}.desc`)))
+				.addText(text => text
+					.setPlaceholder(String(DEFAULT_SETTINGS[key]))
+					.setValue(String(this.plugin.settings[key]))
+					.onChange(value => {
+						// Make sure the value is a non-negative integer
+						if (!/^\d+$/.test(value)) return;
+						this.plugin.settings[key] = Number(value);
+						void this.plugin.saveSettings();
+					}));
+
+		numberSetting("line-width", "formatterLineWidth");
+		numberSetting("term-width", "formatterTermWidth");
+
+		const indentSize = numberSetting("indent-size", "formatterIndentSize");
+		new Setting(containerEl)
+			.setName(t("formatter.indent-tabs.name"))
+			.setDesc(renderHtml(t("formatter.indent-tabs.desc")))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.formatterIndentWithTabs)
+				.onChange(async (value) => {
+					this.plugin.settings.formatterIndentWithTabs = value;
+					indentSize.settingEl.toggleClass("hidden", value);
+					await this.plugin.saveSettings();
+				}));
+		// keep "indent with tabs" above "indent size"
+		containerEl.appendChild(indentSize.settingEl);
+		indentSize.settingEl.toggleClass("hidden", this.plugin.settings.formatterIndentWithTabs);
+
+		new Setting(containerEl)
+			.setName(t("formatter.script-braces.name"))
+			.setDesc(renderHtml(t("formatter.script-braces.desc")))
+			.addDropdown((dropdown) => dropdown
+				.addOption("minimal", t("formatter.script-braces.options.minimal"))
+				.addOption("always", t("formatter.script-braces.options.always"))
+				.setValue(this.plugin.settings.formatterScriptBraces)
+				.onChange(async (value) => {
+					this.plugin.settings.formatterScriptBraces = value as LatexSuitePluginSettings["formatterScriptBraces"];
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName(t("formatter.break-at-relations.name"))
+			.setDesc(renderHtml(t("formatter.break-at-relations.desc")))
+			.addDropdown((dropdown) => dropdown
+				.addOption("whenLong", t("formatter.break-at-relations.options.whenLong"))
+				.addOption("always", t("formatter.break-at-relations.options.always"))
+				.setValue(this.plugin.settings.formatterBreakAtRelations)
+				.onChange(async (value) => {
+					this.plugin.settings.formatterBreakAtRelations = value as LatexSuitePluginSettings["formatterBreakAtRelations"];
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName(t("formatter.row-separator.name"))
+			.setDesc(renderHtml(t("formatter.row-separator.desc")))
+			.addDropdown((dropdown) => dropdown
+				.addOption("blankLine", t("formatter.row-separator.options.blankLine"))
+				.addOption("comment", t("formatter.row-separator.options.comment"))
+				.addOption("none", t("formatter.row-separator.options.none"))
+				.setValue(this.plugin.settings.formatterRowSeparator)
+				.onChange(async (value) => {
+					this.plugin.settings.formatterRowSeparator = value as LatexSuitePluginSettings["formatterRowSeparator"];
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName(t("formatter.annotation-own-line.name"))
+			.setDesc(renderHtml(t("formatter.annotation-own-line.desc")))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.formatterAnnotationOwnLine)
+				.onChange(async (value) => {
+					this.plugin.settings.formatterAnnotationOwnLine = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 
 	private displayAdvancedSnippetSettings() {

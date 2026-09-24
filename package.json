@@ -19,7 +19,8 @@
 		"generator": "npm run generator:latex",
 		"generator:latex": "lezer-generator src/parser/mathjax/latex.grammar -o src/parser/mathjax/latex-parser",
 		"postinstall": "npm run generator:latex",
-		"test": "jiti esbuild.config.mts test & vitest --run"
+		"test": "jiti esbuild.config.mts test & vitest --run",
+		"test:formatter": "vitest --run --config vitest.formatter.config.mts"
 	},
 	"keywords": [],
 	"author": "",
@@ -67,6 +68,8 @@
 		"@codemirror/lang-javascript": "^6.0.0",
 		"@lezer/markdown": "^1.7.2",
 		"@popperjs/core": "2.11.5",
+		"@unified-latex/unified-latex-util-parse": "^1.8.4",
+		"@unified-latex/unified-latex-util-print-raw": "^1.8.4",
 		"valibot": "^1.4.2"
 	}
 }

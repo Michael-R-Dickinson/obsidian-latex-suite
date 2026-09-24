@@ -76,6 +76,19 @@ type AutoEnlargeBracketsSettingDefinition = Definition<
 	| "autoEnlargeBracketsSpace"
 >
 
+type FormatterSettingDefinition = Definition<
+	| "formatterEnabled"
+	| "formatterFormatOnSave"
+	| "formatterLineWidth"
+	| "formatterTermWidth"
+	| "formatterIndentWithTabs"
+	| "formatterIndentSize"
+	| "formatterScriptBraces"
+	| "formatterBreakAtRelations"
+	| "formatterRowSeparator"
+	| "formatterAnnotationOwnLine"
+>
+
 type VimSettingDefinition = Definition<
 	| "vimEnabled"
 	| "vimSelectMode"
@@ -111,6 +124,7 @@ export class LatexSuiteSettingsTab2 extends SettingTab {
 			...this.getMatrixShortcutsDefinitions(),
 			...this.getTaboutDefinitions(),
 			...this.getAutoEnlargeBracketsDefinitions(),
+			...this.getFormatterDefinitions(),
 			...this.getVimSettingDefinitions(),
 			...this.getKeyMapDefinitions(),
 			...this.getExperimentalDefinitions(),
@@ -504,6 +518,107 @@ export class LatexSuiteSettingsTab2 extends SettingTab {
 		return [{
 			type: "page",
 			name: t("auto-enlarge.heading"),
+			items: settings,
+		}]
+	}
+
+	getFormatterDefinitions(): SettingDefinitionItem[] {
+		const settings: FormatterSettingDefinition[] = [
+			{
+				name: t("formatter.enabled.name"),
+				desc: this.renderHtml(t("formatter.enabled.desc")),
+				control: getToggleControl("formatterEnabled")
+			},
+			{
+				name: t("formatter.format-on-save.name"),
+				desc: this.renderHtml(t("formatter.format-on-save.desc")),
+				control: getToggleControl("formatterFormatOnSave")
+			},
+			{
+				name: t("formatter.line-width.name"),
+				desc: this.renderHtml(t("formatter.line-width.desc")),
+				control: {
+					type: "number",
+					key: "formatterLineWidth",
+					defaultValue: DEFAULT_SETTINGS.formatterLineWidth,
+					min: 1,
+				}
+			},
+			{
+				name: t("formatter.term-width.name"),
+				desc: this.renderHtml(t("formatter.term-width.desc")),
+				control: {
+					type: "number",
+					key: "formatterTermWidth",
+					defaultValue: DEFAULT_SETTINGS.formatterTermWidth,
+					min: 1,
+				}
+			},
+			{
+				name: t("formatter.indent-tabs.name"),
+				desc: this.renderHtml(t("formatter.indent-tabs.desc")),
+				control: getToggleControl("formatterIndentWithTabs")
+			},
+			{
+				name: t("formatter.indent-size.name"),
+				desc: this.renderHtml(t("formatter.indent-size.desc")),
+				control: {
+					type: "number",
+					key: "formatterIndentSize",
+					defaultValue: DEFAULT_SETTINGS.formatterIndentSize,
+					min: 0,
+				},
+				visible: () => !this.plugin.settings.formatterIndentWithTabs,
+			},
+			{
+				name: t("formatter.script-braces.name"),
+				desc: this.renderHtml(t("formatter.script-braces.desc")),
+				control: {
+					type: "dropdown",
+					key: "formatterScriptBraces",
+					options: {
+						minimal: t("formatter.script-braces.options.minimal"),
+						always: t("formatter.script-braces.options.always"),
+					},
+					defaultValue: DEFAULT_SETTINGS.formatterScriptBraces
+				}
+			},
+			{
+				name: t("formatter.break-at-relations.name"),
+				desc: this.renderHtml(t("formatter.break-at-relations.desc")),
+				control: {
+					type: "dropdown",
+					key: "formatterBreakAtRelations",
+					options: {
+						whenLong: t("formatter.break-at-relations.options.whenLong"),
+						always: t("formatter.break-at-relations.options.always"),
+					},
+					defaultValue: DEFAULT_SETTINGS.formatterBreakAtRelations
+				}
+			},
+			{
+				name: t("formatter.row-separator.name"),
+				desc: this.renderHtml(t("formatter.row-separator.desc")),
+				control: {
+					type: "dropdown",
+					key: "formatterRowSeparator",
+					options: {
+						blankLine: t("formatter.row-separator.options.blankLine"),
+						comment: t("formatter.row-separator.options.comment"),
+						none: t("formatter.row-separator.options.none"),
+					},
+					defaultValue: DEFAULT_SETTINGS.formatterRowSeparator
+				}
+			},
+			{
+				name: t("formatter.annotation-own-line.name"),
+				desc: this.renderHtml(t("formatter.annotation-own-line.desc")),
+				control: getToggleControl("formatterAnnotationOwnLine")
+			},
+		]
+		return [{
+			type: "page",
+			name: t("formatter.heading"),
 			items: settings,
 		}]
 	}

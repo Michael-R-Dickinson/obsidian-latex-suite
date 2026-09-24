@@ -3,6 +3,7 @@ import type { Environment } from "../snippets/environment";
 import { DEFAULT_SNIPPETS } from "src/utils/default_snippets";
 import { DEFAULT_SNIPPET_VARIABLES } from "src/utils/default_snippet_variables";
 import * as v from "valibot";
+import { DEFAULT_FORMATTER_OPTIONS, type FormatterOptions } from "src/features/latex_formatter";
 
 export type snippetDebugLevel = "off" | "info" | "verbose";
 
@@ -47,6 +48,16 @@ export interface LatexSuiteBasicSettings {
 	highlightDollarEnabled: boolean;
 	excalidrawSupportEnabled: boolean;
 	logLevel: "off" | "info" | "verbose" | "vverbose";
+	formatterEnabled: boolean;
+	formatterFormatOnSave: boolean;
+	formatterLineWidth: number;
+	formatterTermWidth: number;
+	formatterIndentWithTabs: boolean;
+	formatterIndentSize: number;
+	formatterScriptBraces: FormatterOptions["scriptBraces"];
+	formatterBreakAtRelations: FormatterOptions["breakAtRelations"];
+	formatterRowSeparator: FormatterOptions["rowSeparator"];
+	formatterAnnotationOwnLine: boolean;
 }
 
 /** triggers following the same format as https://codemirror.net/docs/ref/#view.KeyBinding */
@@ -158,6 +169,16 @@ export const DEFAULT_SETTINGS: LatexSuitePluginSettings = {
 	highlightDollarEnabled: true,
 	excalidrawSupportEnabled: true,
 	logLevel: "off",
+	formatterEnabled: true,
+	formatterFormatOnSave: false,
+	formatterLineWidth: DEFAULT_FORMATTER_OPTIONS.width,
+	formatterTermWidth: DEFAULT_FORMATTER_OPTIONS.termWidth,
+	formatterIndentWithTabs: false,
+	formatterIndentSize: DEFAULT_FORMATTER_OPTIONS.indent.length,
+	formatterScriptBraces: DEFAULT_FORMATTER_OPTIONS.scriptBraces,
+	formatterBreakAtRelations: DEFAULT_FORMATTER_OPTIONS.breakAtRelations,
+	formatterRowSeparator: DEFAULT_FORMATTER_OPTIONS.rowSeparator,
+	formatterAnnotationOwnLine: DEFAULT_FORMATTER_OPTIONS.annotationOwnLine,
 	autofractionTrigger: "/",
 	matrixShortcutsCellTrigger: "Tab",
 	matrixShortcutsNewlineTrigger: "Enter",
@@ -223,6 +244,18 @@ export function processLatexSuiteSettings(
 			/[A-Za-z]+/.test(trigger) ? `\\${trigger}` : trigger,
 		),
 		forceMathLanguages: strToArray(settings.forceMathLanguages),
+	};
+}
+
+export function getFormatterOptions(settings: LatexSuiteBasicSettings): FormatterOptions {
+	return {
+		width: settings.formatterLineWidth,
+		termWidth: settings.formatterTermWidth,
+		indent: settings.formatterIndentWithTabs ? "\t" : " ".repeat(Math.max(0, settings.formatterIndentSize)),
+		scriptBraces: settings.formatterScriptBraces,
+		breakAtRelations: settings.formatterBreakAtRelations,
+		rowSeparator: settings.formatterRowSeparator,
+		annotationOwnLine: settings.formatterAnnotationOwnLine,
 	};
 }
 

@@ -217,6 +217,62 @@
 		"matrix-exit": "Matrix: move to the next line",
 		"auto-fraction": "Expand fraction"
 	},
+	"formatter": {
+		"heading": "Formatter",
+		"enabled": {
+			"name": "Enabled",
+			"desc": "Whether the LaTeX formatter commands are enabled. The formatter only touches <code>$$</code> display blocks where both <code>$$</code> are on their own line. Blocks that can't be parsed or contain <code>%</code> comments are left unchanged."
+		},
+		"format-on-save": {
+			"name": "Format on save",
+			"desc": "Format all display math blocks of the current file when saving it with the <code>Save current file</code> command (e.g. <code>Ctrl/Cmd+S</code>). Obsidian's automatic background saves don't trigger formatting."
+		},
+		"line-width": {
+			"name": "Line width",
+			"desc": "Rows longer than this are broken at top-level relations such as <code>=</code>, <code>\\le</code> or <code>\\approx</code>."
+		},
+		"term-width": {
+			"name": "Term width",
+			"desc": "Break before top-level operators such as <code>+</code>, <code>-</code> or <code>\\cdot</code> when a term next to the operator is longer than this."
+		},
+		"indent-tabs": {
+			"name": "Indent with tabs",
+			"desc": "Whether to indent environment content and continuation lines with tabs instead of spaces."
+		},
+		"indent-size": {
+			"name": "Indent size",
+			"desc": "Number of spaces per indent level."
+		},
+		"script-braces": {
+			"name": "Script braces",
+			"desc": "Braces around sub- and superscripts.",
+			"options": {
+				"minimal": "Minimal (e^z, e^{10})",
+				"always": "Always (e^{z})"
+			}
+		},
+		"break-at-relations": {
+			"name": "Break at relations",
+			"desc": "When to put each relation (<code>=</code>, <code>&lt;</code>, <code>\\le</code>, ...) of a row on its own line.",
+			"options": {
+				"whenLong": "When the row is too long",
+				"always": "Always"
+			}
+		},
+		"row-separator": {
+			"name": "Row separator",
+			"desc": "What to insert after a row that was split over several lines. Never inserted after the last row of a block.",
+			"options": {
+				"blankLine": "Blank line",
+				"comment": "Empty % comment",
+				"none": "None"
+			}
+		},
+		"annotation-own-line": {
+			"name": "Annotations on their own line",
+			"desc": "Always put <code>&amp;&amp; \\text{...}</code> annotations on their own line, even if the row would fit."
+		}
+	},
 	"experimental": {
 		"heading": {
 			"name": "Experimental features",

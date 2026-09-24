@@ -1,4 +1,5 @@
 import { EditorView } from "@codemirror/view";
+import type { Command } from "obsidian";
 import { CodeMirrorEditor, type Vim } from "./vim_types";
 
 declare global {
@@ -16,6 +17,10 @@ declare global {
 declare module "obsidian" {
 	interface App {
 		isVimEnabled?: () => boolean;
+		/** internal command registry, used to wrap "editor:save-file" for format on save */
+		commands?: {
+			commands?: Record<string, Command>;
+		};
 	}
 	interface Editor {
 		cm: EditorView

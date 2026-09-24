@@ -6,6 +6,7 @@ import { isIMESupported, LatexSuiteSettingTab } from "./settings/settings_tab";
 import { ICONS } from "./settings/ui/icons";
 
 import { getEditorCommands, getVimEditorCommands, getVimRunMatrixEnterCommand } from "./features/editor_commands";
+import { registerFormatOnSave } from "./features/format_latex";
 import { getLatexSuiteConfigExtension } from "./snippets/codemirror/config";
 import { type SnippetVariables, parseSnippetVariables, parseSnippets } from "./snippets/parse";
 import { handleUpdate, onInput, keyboardEventPlugin, getKeymaps } from "./latex_suite";
@@ -110,6 +111,7 @@ export default class LatexSuitePlugin extends Plugin implements LatexSuitePlugin
 		this.watchFiles();
 
 		this.addEditorCommands();
+		registerFormatOnSave(this);
 	}
 
 	onunload() {}
