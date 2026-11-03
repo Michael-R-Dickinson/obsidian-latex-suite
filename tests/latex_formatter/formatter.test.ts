@@ -14,8 +14,9 @@ import { canonical } from "./meaning";
 const FIXTURES = join(__dirname, "..", "fixtures", "latex_formatter");
 const fixture = (name: string) => readFileSync(join(FIXTURES, name), "utf8");
 
+// most layout tests predate lineBreakPosition "start" and are written for "\\" at the row end
 const fmt = (src: string, opts: Partial<FormatterOptions> = {}) =>
-	formatMath(src, { ...DEFAULT_FORMATTER_OPTIONS, ...opts });
+	formatMath(src, { ...DEFAULT_FORMATTER_OPTIONS, lineBreakPosition: "end", ...opts });
 const lines = (...l: string[]) => l.join("\n");
 
 // A long align block reused by several layout / separator tests
@@ -241,6 +242,50 @@ describe("layout", () => {
 	});
 });
 
+describe("lineBreakPosition start", () => {
+	const start = (src: string, opts: Partial<FormatterOptions> = {}) => fmt(src, { lineBreakPosition: "start", ...opts });
+
+	it("pulls a leading &= onto the \\\\ line", () => {
+		expect(start("\\begin{align} a &= b \\\\ &= c \\\\ &\\le d \\end{align}")).toBe(
+			lines("\\begin{align}", "  a &= b", "  \\\\ &= c", "  \\\\ &\\le d", "\\end{align}"),
+		);
+	});
+
+	it("puts \\\\ alone on its line before a row without a leading &", () => {
+		expect(start("\\begin{align} a &= b \\\\ c &= d \\\\ \\end{align}")).toBe(
+			lines("\\begin{align}", "  a &= b", "  \\\\", "  c &= d", "  \\\\", "\\end{align}"),
+		);
+	});
+
+	it("hangs continuation lines under the first term after '\\\\ &= '", () => {
+		expect(start(LONG_ALIGN)).toBe(
+			lines(
+				"\\begin{align}",
+				"  x",
+				"    &= aaaaaaaaaaaaaaaaaaaaaaa",
+				"       + bbbbbbbbbbbbbbbbbbbbbbbbbbb",
+				"",
+				"  \\\\ &= c",
+				"  \\\\ &= ddddddddddddddddddddddddd",
+				"        \\cdot eeeeeeeeeeeeeeeeeeeeeee",
+				"\\end{align}",
+			),
+		);
+	});
+
+	it("keeps \\\\[4pt]", () => {
+		expect(start("\\begin{align} a &= b \\\\[4pt] &= c \\end{align}")).toBe(
+			lines("\\begin{align}", "  a &= b", "  \\\\[4pt] &= c", "\\end{align}"),
+		);
+	});
+
+	it("leaves matrices with \\\\ at the row end", () => {
+		expect(start("\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}")).toBe(
+			lines("\\begin{pmatrix}", "  a & b \\\\", "  c & d", "\\end{pmatrix}"),
+		);
+	});
+});
+
 describe("row separator", () => {
 	it("blankLine", () => expect(fmt(LONG_ALIGN, { rowSeparator: "blankLine" })).toBe(longAlign("")));
 	it("comment", () => expect(fmt(LONG_ALIGN, { rowSeparator: "comment" })).toBe(longAlign("%")));
@@ -431,10 +476,11 @@ describe("option matrix: idempotent and meaning-preserving", () => {
 			for (const termWidth of [5, 1000])
 				for (const breakAtRelations of ["whenLong", "always"] as const)
 					for (const rowSeparator of ["blankLine", "comment", "none"] as const)
-						for (const annotationOwnLine of [true, false]) {
-							const indent = combos.length % 2 ? "\t" : "  ";
-							combos.push({ width, indent, scriptBraces, termWidth, breakAtRelations, rowSeparator, annotationOwnLine });
-						}
+						for (const annotationOwnLine of [true, false])
+							for (const lineBreakPosition of ["end", "start"] as const) {
+								const indent = combos.length % 2 ? "\t" : "  ";
+								combos.push({ width, indent, scriptBraces, termWidth, breakAtRelations, rowSeparator, annotationOwnLine, lineBreakPosition });
+							}
 	combos.push(DEFAULT_FORMATTER_OPTIONS);
 	const TIMEOUT = 60_000;
 

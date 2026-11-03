@@ -13,6 +13,8 @@ export interface FormatterOptions {
 	rowSeparator: "blankLine" | "comment" | "none";
 	/** Put "&& \text{...}" annotations on their own line even if the row would fit. */
 	annotationOwnLine: boolean;
+	/** "end": `a &= b \\` (\\ ends the row). "start": \\ opens the next line, `\\ &= b`, so expression lines hold only the expression. */
+	lineBreakPosition: "end" | "start";
 }
 
 export const DEFAULT_FORMATTER_OPTIONS: FormatterOptions = {
@@ -23,4 +25,5 @@ export const DEFAULT_FORMATTER_OPTIONS: FormatterOptions = {
 	breakAtRelations: "whenLong",
 	rowSeparator: "blankLine",
 	annotationOwnLine: true,
+	lineBreakPosition: "start",
 };

@@ -306,21 +306,37 @@ function printRows(nodes: Node[], ind: string, opts: FormatterOptions, matrix = 
 	const lines: string[] = [];
 	const all = rows(nodes, opts, matrix);
 	const separator = rowSeparatorLine(opts);
-	all.forEach((r, i) => {
+	// "start": \\ opens the next line ("\\ &= b") instead of ending the row; matrices keep "a & b \\"
+	const leading = opts.lineBreakPosition === "start" && !matrix;
+	let pending: string | null = null; // leading-mode \\ of the previous row, not printed yet
+	for (const [i, r] of all.entries()) {
+		const align = r.atoms[0]?.kind === "align";
 		// rows that start with "&=" sit one level deeper than the LHS
-		const rowInd = r.atoms[0]?.kind === "align" ? ind + opts.indent : ind;
+		let rowInd = align ? ind + opts.indent : ind;
+		// leading "\\" + "&= b" share a line: lay the row out as if the "\\ " were indentation
+		let head: string | null = null;
+		if (pending !== null) {
+			if (align && r.atoms.length) {
+				head = ind + pending + " ".repeat(Math.max(1, rowInd.length - ind.length - pending.length));
+				rowInd = " ".repeat(head.length);
+			} else lines.push(ind + pending);
+			pending = null;
+		}
 		// a bare "\\" row has no atoms: print just the line break
 		// (the prototype crashed here and skipped the whole block)
 		// matrix rows are never broken: one line per row
 		const rowLines = !r.atoms.length ? [] : matrix ? [rowInd + join(r.atoms)] : layoutRow(r.atoms, rowInd, opts);
+		if (head !== null) rowLines[0] = head + rowLines[0].slice(rowInd.length);
 		if (r.lineBreak !== null) {
-			if (rowLines.length) rowLines[rowLines.length - 1] += " " + r.lineBreak;
+			if (leading) pending = r.lineBreak;
+			else if (rowLines.length) rowLines[rowLines.length - 1] += " " + r.lineBreak;
 			else rowLines.push(rowInd + r.lineBreak);
 		}
 		lines.push(...rowLines);
 		const isLast = i === all.length - 1;
 		if (rowLines.length > 1 && !isLast && separator !== null) lines.push(separator);
-	});
+	}
+	if (pending !== null) lines.push(ind + pending);
 	return lines;
 }
 

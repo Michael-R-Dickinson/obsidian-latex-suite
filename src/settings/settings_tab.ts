@@ -596,6 +596,18 @@ export class LatexSuiteSettingTab extends PluginSettingTab {
 					this.plugin.settings.formatterAnnotationOwnLine = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName(t("formatter.line-break-position.name"))
+			.setDesc(renderHtml(t("formatter.line-break-position.desc")))
+			.addDropdown((dropdown) => dropdown
+				.addOption("start", t("formatter.line-break-position.options.start"))
+				.addOption("end", t("formatter.line-break-position.options.end"))
+				.setValue(this.plugin.settings.formatterLineBreakPosition)
+				.onChange(async (value) => {
+					this.plugin.settings.formatterLineBreakPosition = value as LatexSuitePluginSettings["formatterLineBreakPosition"];
+					await this.plugin.saveSettings();
+				}));
 	}
 
 	private displayAdvancedSnippetSettings() {

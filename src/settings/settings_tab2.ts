@@ -88,6 +88,7 @@ type FormatterSettingDefinition = Definition<
 	| "formatterBreakAtRelations"
 	| "formatterRowSeparator"
 	| "formatterAnnotationOwnLine"
+	| "formatterLineBreakPosition"
 >
 
 type VimSettingDefinition = Definition<
@@ -629,6 +630,19 @@ export class LatexSuiteSettingsTab2 extends SettingTab {
 				name: t("formatter.annotation-own-line.name"),
 				desc: this.renderHtml(t("formatter.annotation-own-line.desc")),
 				control: getToggleControl("formatterAnnotationOwnLine")
+			},
+			{
+				name: t("formatter.line-break-position.name"),
+				desc: this.renderHtml(t("formatter.line-break-position.desc")),
+				control: {
+					type: "dropdown",
+					key: "formatterLineBreakPosition",
+					options: {
+						start: t("formatter.line-break-position.options.start"),
+						end: t("formatter.line-break-position.options.end"),
+					},
+					defaultValue: DEFAULT_SETTINGS.formatterLineBreakPosition
+				}
 			},
 		]
 		return [{

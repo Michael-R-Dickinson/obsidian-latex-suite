@@ -62,6 +62,7 @@ export interface LatexSuiteBasicSettings {
 	formatterBreakAtRelations: FormatterOptions["breakAtRelations"];
 	formatterRowSeparator: FormatterOptions["rowSeparator"];
 	formatterAnnotationOwnLine: boolean;
+	formatterLineBreakPosition: FormatterOptions["lineBreakPosition"];
 }
 
 /** triggers following the same format as https://codemirror.net/docs/ref/#view.KeyBinding */
@@ -185,6 +186,7 @@ export const DEFAULT_SETTINGS: LatexSuitePluginSettings = {
 	formatterBreakAtRelations: DEFAULT_FORMATTER_OPTIONS.breakAtRelations,
 	formatterRowSeparator: DEFAULT_FORMATTER_OPTIONS.rowSeparator,
 	formatterAnnotationOwnLine: DEFAULT_FORMATTER_OPTIONS.annotationOwnLine,
+	formatterLineBreakPosition: DEFAULT_FORMATTER_OPTIONS.lineBreakPosition,
 	autofractionTrigger: "/",
 	matrixShortcutsCellTrigger: "Tab",
 	matrixShortcutsNewlineTrigger: "Enter",
@@ -262,6 +264,7 @@ export function getFormatterOptions(settings: LatexSuiteBasicSettings): Formatte
 		breakAtRelations: settings.formatterBreakAtRelations,
 		rowSeparator: settings.formatterRowSeparator,
 		annotationOwnLine: settings.formatterAnnotationOwnLine,
+		lineBreakPosition: settings.formatterLineBreakPosition,
 	};
 }
 

@@ -25,10 +25,10 @@ Solution:
 $$
 \begin{align}
   \lim_{\Delta z \to 0} \frac{e^{z + \Delta z} + e^{-z}}{\Delta z}
-    &= e^z \lim_{\Delta z \to 0} \frac{e^{\Delta} z - 1}{\Delta z} \\
+    &= e^z \lim_{\Delta z \to 0} \frac{e^{\Delta} z - 1}{\Delta z}
 
-    &= e^z \lim \frac{(e^{\Delta x}(\cos \Delta y) + i \sin \Delta y) - 1}{\Delta z} \\
-    &= \dots \text{figure this out later}
+  \\ &= e^z \lim \frac{(e^{\Delta x}(\cos \Delta y) + i \sin \Delta y) - 1}{\Delta z}
+  \\ &= \dots \text{figure this out later}
 \end{align}
 $$
 

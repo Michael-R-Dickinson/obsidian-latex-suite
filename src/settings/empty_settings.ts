@@ -66,6 +66,7 @@ export const EMPTY_SETTINGS: LatexSuitePluginSettings = {
 	formatterBreakAtRelations: "whenLong",
 	formatterRowSeparator: "none",
 	formatterAnnotationOwnLine: false,
+	formatterLineBreakPosition: "end",
 	autofractionTrigger: "",
 	matrixShortcutsCellTrigger: "",
 	matrixShortcutsExitTrigger: "",

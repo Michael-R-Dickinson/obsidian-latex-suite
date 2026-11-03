@@ -26,6 +26,7 @@ describe("getFormatterOptions", () => {
 				formatterBreakAtRelations: "always",
 				formatterRowSeparator: "comment",
 				formatterAnnotationOwnLine: false,
+				formatterLineBreakPosition: "end",
 			}),
 		).toEqual({
 			width: 80,
@@ -35,6 +36,7 @@ describe("getFormatterOptions", () => {
 			breakAtRelations: "always",
 			rowSeparator: "comment",
 			annotationOwnLine: false,
+			lineBreakPosition: "end",
 		});
 	});
 

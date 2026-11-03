@@ -283,6 +283,14 @@
 		"annotation-own-line": {
 			"name": "Annotations on their own line",
 			"desc": "Always put <code>&amp;&amp; \\text{...}</code> annotations on their own line, even if the row would fit."
+		},
+		"line-break-position": {
+			"name": "Line break position",
+			"desc": "Where <code>\\\\</code> goes. Start of next line: <code>\\\\ &amp;= b</code>, so lines with expressions hold only the expression. Matrices always keep <code>\\\\</code> at the end of the row.",
+			"options": {
+				"start": "Start of next line",
+				"end": "End of row"
+			}
 		}
 	},
 	"experimental": {
