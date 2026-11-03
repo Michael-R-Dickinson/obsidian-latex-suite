@@ -1,4 +1,30 @@
-# Obsidian Latex Suite <img src="https://img.shields.io/github/manifest-json/v/artisticat1/obsidian-latex-suite"> <img src="https://img.shields.io/github/downloads/artisticat1/obsidian-latex-suite/total">
+# Obsidian LaTeX Suite (fork)
+
+A fork of [obsidian-latex-suite](https://github.com/artisticat1/obsidian-latex-suite) with the following additions.
+
+## Additions
+
+### LaTeX formatter
+Reformats `$$` display blocks for readability and easy line-by-line editing (e.g. in vim): consistent spacing, one relation per line for long rows, long sums split at `+`/`-`, `&& \text{...}` annotations on their own line, and `\\` at the start of the next line (`\\ &= b`, configurable). Matrices keep one row per line.
+- Commands: **Format LaTeX in current file**, **Format LaTeX block at cursor** (single undo step)
+- Optional *Format on save* (`Ctrl/Cmd+S` only, never while typing)
+- Configurable line width, term width, indent, script braces, relation breaking, row separator, annotation placement and line break position
+
+See [DOCS.md › Formatter](DOCS.md#formatter).
+
+### Conceal
+- **Line reveal mode**: reveal all LaTeX on the cursor's line instead of only the symbol beneath the cursor (*Reveal mode* setting).
+- **Overline** works on arbitrary content and is drawn as one flat line.
+- `\left( ... \right)` with plain brackets conceals to just the brackets.
+
+### Vim
+- **Run visual snippets from visual mode**: each single-character visual snippet trigger (e.g. `(`, `U`) becomes a visual mode key that runs the snippet directly, skipping select mode. Keys follow your snippets and update when they reload. See [DOCS.md › Visual snippets from visual mode](DOCS.md#visual-snippets-from-visual-mode).
+
+---
+
+# Original README
+
+## Obsidian Latex Suite <img src="https://img.shields.io/github/manifest-json/v/artisticat1/obsidian-latex-suite"> <img src="https://img.shields.io/github/downloads/artisticat1/obsidian-latex-suite/total">
 
 A plugin for Obsidian that aims to make typesetting LaTeX math as fast as handwriting.
 
@@ -18,7 +44,7 @@ See [Gilles Castel's writeup](https://castel.dev/post/lecture-notes-1/) for more
 The plugin comes with a [set of default snippets](https://github.com/artisticat1/obsidian-latex-suite/blob/main/src/default_snippets.js), loosely based on [Gilles Castel's](https://castel.dev/post/lecture-notes-1/#other-snippets). You can modify them, remove them, and write your own.
 
 
-## Usage
+### Usage
 To get started, type "dm" to enter display math mode. Try typing the following:
 
 - "xsr" → "x^{2}".
@@ -42,9 +68,9 @@ You can also add your own snippets! [For more info on writing snippets, see **he
 Aside from snippets, the plugin also comes with several other features that aim to make writing LaTeX easier.
 
 
-## Features
+### Features
 
-### Auto-fraction
+#### Auto-fraction
 Lets you type "1/x" instead of "\frac{1}{x}".
 
 For example, it makes the following expansions:
@@ -59,7 +85,7 @@ Once done typing the denominator, press <kbd>Tab</kbd> to exit the fraction.
 ![auto-fraction](https://raw.githubusercontent.com/artisticat1/obsidian-latex-suite/main/gifs/auto-fraction.gif)
 
 
-### Matrix shortcuts
+#### Matrix shortcuts
 While inside a matrix, array, align, or cases environment,
 
 - Pressing <kbd>Tab</kbd> will insert the "&" symbol.
@@ -69,7 +95,7 @@ While inside a matrix, array, align, or cases environment,
 ![matrix shortcuts](https://raw.githubusercontent.com/artisticat1/obsidian-latex-suite/main/gifs/matrix_shortcuts.gif)
 
 
-### Conceal
+#### Conceal
 **This feature must be enabled in the plugin settings.**
 
 Make your equations more readable by hiding LaTeX markup and instead displaying it in a pretty format.
@@ -98,7 +124,7 @@ To reveal the LaTeX syntax, move your cursor over it. You can also choose to del
 > }
 > ```
 
-### Tabout
+#### Tabout
 To make it easier to navigate and exit equations,
 
 - Pressing <kbd>Tab</kbd> while the cursor is at the end of an equation will move the cursor outside the `$` symbols.
@@ -106,14 +132,14 @@ To make it easier to navigate and exit equations,
 - Otherwise, pressing <kbd>Tab</kbd> will advance the cursor to the next closing bracket: `)`, `]`, `}`, `\rangle`, or `\rvert`.
 
 
-### Preview inline math
+#### Preview inline math
 When your cursor is inside inline math, a popup window showing the rendered math will be displayed.
 
 <img width=500 src="https://raw.githubusercontent.com/artisticat1/obsidian-latex-suite/main/gifs/inline_math_preview_1.png">
 <img width=650 src="https://raw.githubusercontent.com/artisticat1/obsidian-latex-suite/main/gifs/inline_math_preview_2.png">
 
 
-### Visual snippets
+#### Visual snippets
 Sometimes you want to annotate math, or cancel or cross out terms. Selecting some math with the cursor and typing
 
 - "U" will surround it with "\\underbrace".
@@ -125,13 +151,13 @@ Sometimes you want to annotate math, or cancel or cross out terms. Selecting som
 ![visual snippets](https://raw.githubusercontent.com/artisticat1/obsidian-latex-suite/main/gifs/visual_snippets.gif)
 
 
-### Auto-enlarge brackets
+#### Auto-enlarge brackets
 When a snippet containing "\\sum", "\\int" or "\\frac" is triggered, any enclosing brackets will automatically be enlarged with "\\left" and "\\right".
 
 ![auto-enlarge brackets](https://raw.githubusercontent.com/artisticat1/obsidian-latex-suite/main/gifs/auto-enlarge_brackets.gif)
 
 
-### Color and highlight matching brackets
+#### Color and highlight matching brackets
 
 To help make your equations more readable,
 
@@ -142,21 +168,15 @@ To help make your equations more readable,
 ![color and highlight matching brackets demo](https://raw.githubusercontent.com/artisticat1/obsidian-latex-suite/main/gifs/color_brackets.gif)
 
 
-### Editor commands
+#### Editor commands
 
 The plugin also adds the following commands to the Command palette:
 
 - **Box current equation** — surround the equation the cursor is currently in with a box, using "\boxed{ ... }".
 - **Select current equation** – select the equation the cursor is currently in.
-- **Format LaTeX in current file** – format every `$$` display block in the file. See [Formatter](#formatter).
-- **Format LaTeX block at cursor** – format only the `$$` block the cursor is in.
 
 
-### Formatter
-
-Reformat `$$` display blocks for readability and easy editing: consistent spacing, one relation per line for long rows, long sums split at `+`/`-`, and `&&` annotations on their own line. Run it from the command palette or enable *Format on save*. See the [documentation](DOCS.md#formatter).
-
-### Snippets
+#### Snippets
 
 *Snippets* are shortcuts that allow you to insert certain text based on certain triggers. For example, the default snippet
 
@@ -199,7 +219,7 @@ Snippets can be edited in the plugin settings. The structure of a snippet is as 
 - `includedMacros` (optional): Macros to include this snippet.
 
 
-#### Options
+##### Options
 - `t` : Text mode. Only run this snippet outside math
 - `m` : Math mode. Only run this snippet inside math. Shorthand for both `M` and `n`
 - `M` : Block math mode. Only run this snippet inside a `$$ ... $$` block
@@ -229,7 +249,7 @@ You can [view snippets written by others and share your own snippets here](https
 > - Outside your vault, for which latex suite thus would need access to outside the vault.
 
 
-## Cheatsheet
+### Cheatsheet
 
 | Trigger            | Replacement      |
 | ------------------ | ---------------- |
@@ -259,7 +279,7 @@ You can [view snippets written by others and share your own snippets here](https
 When running a snippet that **moves the cursor inside brackets {}, press <kbd>Tab</kbd> to exit the brackets**.
 
 
-### Greek letters
+#### Greek letters
 
 | Trigger | Replacement  | Trigger | Replacement |
 | ------- | ------------ | ------- | ----------- |
@@ -286,12 +306,12 @@ For Greek letters with short names (2-3 characters), just type their name,
 e.g. "pi" → "\\pi".
 
 
-## Acknowledgements
+### Acknowledgements
 - [@tth05](https://github.com/tth05)'s [Obsidian Completr](https://github.com/tth05/obsidian-completr) for the basis of the tabstop code.
 - [Dynamic Highlights](https://github.com/nothingislost/obsidian-dynamic-highlights/blob/master/src/settings/ui.ts) for reference.
 - [Quick Latex for Obsidian](https://github.com/joeyuping/quick_latex_obsidian) for inspiration.
 
-## Related projects
+### Related projects
 
 - [VimTex](https://github.com/lervag/vimtex) provides concealments in vim and more quality of life features for using vim in latex.
 - [UltiSnips](https://github.com/SirVer/ultisnips) provides a snippet engine for vim.
@@ -301,11 +321,11 @@ e.g. "pi" → "\\pi".
 - [LaTeX Utilities](https://github.com/tecosaur/LaTeX-Utilities) provides a snippet engine for latex only in vscode.
 - [AUCTeX](https://www.gnu.org/software/auctex/) provides extensive quality of life features for latex.
 
-## Contributing
+### Contributing
 Any contributions and PRs are welcome! [See here for more info.](./CONTRIBUTING.md)
 
 
-## Support
+### Support
 If you like this plugin and want to say thanks, you can buy me a coffee here.
 
 <a href='https://ko-fi.com/J3J6BBZAW' target='_blank'><img height='42' style='border:0px;height:42px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
